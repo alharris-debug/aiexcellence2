@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI CoE Playbook Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            text-align: center;
+            padding: 60px 20px;
+            border: 3px dashed #e2e8f0;
+            border-radius: 12px;
+            background: #f7fafc;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-section:hover {
+            border-color: #f093fb;
+            background: #fff5f7;
+        }
+
+        .upload-section.dragover {
+            border-color: #f5576c;
+            background: #fff0f3;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .upload-section h2 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .upload-section p {
+            color: #718096;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .file-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border: 2px solid #48bb78;
+            display: none;
+        }
+
+        .file-info.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .playbook-content {
+            margin-top: 30px;
+        }
+
+        .section {
+            background: #f7fafc;
+            border-left: 4px solid #f093fb;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 6px;
+        }
+
+        .section h2 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section h3 {
+            color: #2d3748;
+            margin: 20px 0 10px 0;
+            font-size: 18px;
+        }
+
+        .section p {
+            color: #4a5568;
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+
+        .section ul, .section ol {
+            margin-left: 25px;
+            color: #4a5568;
+        }
+
+        .section li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+
+        .alert-info {
+            background: #ebf8ff;
+            border-left-color: #4299e1;
+            color: #2c5282;
+        }
+
+        .alert-warning {
+            background: #fffaf0;
+            border-left-color: #ed8936;
+            color: #7c2d12;
+        }
+
+        .alert-success {
+            background: #f0fff4;
+            border-left-color: #48bb78;
+            color: #22543d;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .badge-urgent {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .badge-combined {
+            background: #e6fffa;
+            color: #234e52;
+        }
+
+        .badge-split {
+            background: #feebc8;
+            color: #744210;
+        }
+
+        .checklist {
+            background: white;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: start;
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .checklist-item:hover {
+            background: #f7fafc;
+        }
+
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+
+        .checklist-checkbox {
+            margin-right: 12px;
+            margin-top: 2px;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin: 20px 0;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 25px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #f093fb;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px #f093fb;
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: -19px;
+            top: 17px;
+            width: 2px;
+            height: calc(100% - 12px);
+            background: #e2e8f0;
+        }
+
+        .timeline-item:last-child::after {
+            display: none;
+        }
+
+        .timeline-item h4 {
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .timeline-item p {
+            color: #718096;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .job-description-box {
+            background: white;
+            padding: 25px;
+            border-radius: 6px;
+            border: 2px solid #e2e8f0;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-secondary {
+            background: #4299e1;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+
+        .quick-win-card {
+            background: #f0fff4;
+            border: 2px solid #48bb78;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            align-items: start;
+            gap: 12px;
+        }
+
+        .quick-win-card::before {
+            content: '✓';
+            font-size: 24px;
+            color: #48bb78;
+            font-weight: bold;
+        }
+
+        .tab-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            color: #718096;
+            cursor: pointer;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            color: #2d3748;
+        }
+
+        .tab.active {
+            color: #f5576c;
+            border-bottom-color: #f5576c;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .metric-card h4 {
+            color: #718096;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .metric-card p {
+            color: #2d3748;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card h2 {
+            margin-bottom: 15px;
+        }
+
+        .summary-card p {
+            opacity: 0.95;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 AI CoE Implementation Playbook</h1>
+            <p>Your customized execution guide based on Form #1 recommendations</p>
+        </div>
+
+        <div class="content">
+            <!-- Upload Section -->
+            <div id="uploadSection">
+                <div class="upload-section" id="dropZone">
+                    <div class="upload-icon">📄</div>
+                    <h2>Upload Your AI CoE Plan</h2>
+                    <p>Drop your plan file here or click to browse</p>
+                    <label class="upload-btn">
+                        Choose File
+                        <input type="file" class="file-input" id="fileInput" accept=".txt">
+                    </label>
+                    <div class="file-info" id="fileInfo">
+                        <p><strong>✓ File loaded:</strong> <span id="fileName"></span></p>
+                        <p>Analyzing your recommendations...</p>
+                    </div>
+                </div>
+
+                <div class="alert alert-info" style="margin-top: 20px;">
+                    <p><strong>📋 What happens next?</strong></p>
+                    <p>Once you upload your plan from Form #1, this tool will generate:</p>
+                    <ul style="margin-top: 10px;">
+                        <li>Complete job descriptions tailored to your role structure</li>
+                        <li>Interview questions and candidate evaluation rubrics</li>
+                        <li>Detailed first 30-day action plan with daily tasks</li>
+                        <li>Meeting templates and communication plans</li>
+                        <li>Tool recommendations and setup guides</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Playbook Content (hidden until file uploaded) -->
+            <div id="playbookContent" class="hidden playbook-content"></div>
+        </div>
+    </div>
+
+    <script>
+        let parsedData = null;
+
+        // File upload handling
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.txt')) {
+                processFile(file);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                processFile(file);
+            }
+        });
+
+        function processFile(file) {
+            fileName.textContent = file.name;
+            fileInfo.classList.add('show');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                parseAndGeneratePlaybook(content);
+            };
+            reader.readAsText(file);
+        }
+
+        function parseAndGeneratePlaybook(content) {
+            // Parse the uploaded file
+            const lines = content.split('\n');
+            
+            parsedData = {
+                company: '',
+                preparedFor: '',
+                maturityLevel: '',
+                aiUsers: '',
+                painPointCount: 0,
+                budget: '',
+                timeline: '',
+                recommendations: {}
+            };
+
+            // Extract basic info
+            lines.forEach((line, index) => {
+                if (line.includes('Company:')) {
+                    parsedData.company = line.split('Company:')[1].trim();
+                }
+                if (line.includes('Prepared for:')) {
+                    parsedData.preparedFor = line.split('Prepared for:')[1].trim();
+                }
+                if (line.includes('Current State:')) {
+                    parsedData.maturityLevel = line.split('Current State:')[1].trim().split(' ')[0];
+                }
+                if (line.includes('AI Users:')) {
+                    parsedData.aiUsers = line.split('AI Users:')[1].trim();
+                }
+                if (line.includes('Pain Points:')) {
+                    parsedData.painPointCount = parseInt(line.split('Pain Points:')[1].trim());
+                }
+                if (line.includes('Budget:')) {
+                    parsedData.budget = line.split('Budget:')[1].trim();
+                }
+                if (line.includes('Timeline:')) {
+                    parsedData.timeline = line.split('Timeline:')[1].trim();
+                }
+            });
+
+            // Extract recommendations JSON
+            const recStart = content.indexOf('{');
+            const recEnd = content.lastIndexOf('}') + 1;
+            if (recStart !== -1 && recEnd !== -1) {
+                const jsonStr = content.substring(recStart, recEnd);
+                try {
+                    parsedData.recommendations = JSON.parse(jsonStr);
+                } catch (e) {
+                    console.error('Error parsing recommendations:', e);
+                }
+            }
+
+            // Generate the playbook
+            generatePlaybook();
+        }
+
+        function generatePlaybook() {
+            const content = document.getElementById('playbookContent');
+            const rec = parsedData.recommendations;
+
+            // Hide upload section
+            document.getElementById('uploadSection').style.display = 'none';
+            content.classList.remove('hidden');
+
+            let html = '';
+
+            // Summary Card
+            html += `
+                <div class="summary-card">
+                    <h2>Welcome back, ${parsedData.preparedFor}!</h2>
+                    <p><strong>${parsedData.company}</strong> is ready to implement their AI Center of Excellence.</p>
+                    <p style="margin-top: 15px;">
+                        <strong>Role Structure:</strong> ${getRoleStructureName(rec.roleStructure)} 
+                        <strong>• Hiring Strategy:</strong> ${getHiringStrategyName(rec.hiringStrategy)}
+                        <strong>• Urgency:</strong> ${rec.urgencyLevel.toUpperCase()}
+                    </p>
+                </div>
+            `;
+
+            // Quick Wins
+            if (rec.quickWins && rec.quickWins.length > 0) {
+                html += '<div class="section">';
+                html += '<h2>🚀 Quick Wins - Start These Today</h2>';
+                html += '<p>These require no budget and can be started immediately while you hire:</p>';
+                rec.quickWins.forEach(win => {
+                    html += `<div class="quick-win-card"><div>${win}</div></div>`;
+                });
+                html += '</div>';
+            }
+
+            // Tabs for different sections
+            html += '<div class="tab-container">';
+            html += '<button class="tab active" onclick="switchTab(\'hiring\')">Hiring & Job Descriptions</button>';
+            html += '<button class="tab" onclick="switchTab(\'first30\')">First 30 Days</button>';
+            html += '<button class="tab" onclick="switchTab(\'meetings\')">Meeting Templates</button>';
+            html += '<button class="tab" onclick="switchTab(\'tools\')">Tools & Setup</button>';
+            html += '<button class="tab" onclick="switchTab(\'metrics\')">Success Metrics</button>';
+            html += '</div>';
+
+            // Tab: Hiring & Job Descriptions
+            html += '<div id="tab-hiring" class="tab-content active">';
+            html += generateHiringSection(rec);
+            html += '</div>';
+
+            // Tab: First 30 Days
+            html += '<div id="tab-first30" class="tab-content">';
+            html += generateFirst30DaysSection(rec);
+            html += '</div>';
+
+            // Tab: Meeting Templates
+            html += '<div id="tab-meetings" class="tab-content">';
+            html += generateMeetingTemplatesSection(rec);
+            html += '</div>';
+
+            // Tab: Tools & Setup
+            html += '<div id="tab-tools" class="tab-content">';
+            html += generateToolsSection(rec);
+            html += '</div>';
+
+            // Tab: Success Metrics
+            html += '<div id="tab-metrics" class="tab-content">';
+            html += generateMetricsSection(rec);
+            html += '</div>';
+
+            // Download buttons
+            html += '<div class="action-buttons">';
+            html += '<button class="btn btn-primary" onclick="downloadJobDescriptions()">📄 Download Job Descriptions</button>';
+            html += '<button class="btn btn-secondary" onclick="downloadActionPlan()">📋 Download 30-Day Plan</button>';
+            html += '<button class="btn btn-success" onclick="downloadAll()">📦 Download Complete Playbook</button>';
+            html += '</div>';
+
+            content.innerHTML = html;
+        }
+
+        function generateHiringSection(rec) {
+            let html = '<div class="section">';
+            html += '<h2>👥 Hiring Guide</h2>';
+
+            if (rec.roleStructure === 'combined') {
+                html += '<h3>Job Title: Head of AI / AI Program Lead</h3>';
+                html += generateJobDescription('combined', rec.hiringStrategy);
+            } else if (rec.roleStructure === 'split') {
+                html += '<h3>Role 1: AI Strategist / AI Architect</h3>';
+                html += generateJobDescription('strategist', rec.hiringStrategy);
+                html += '<h3 style="margin-top: 30px;">Role 2: AI Enabler / AI Engagement Manager</h3>';
+                html += generateJobDescription('enabler', rec.hiringStrategy);
+            } else {
+                html += '<h3>Phase 1: Combined Role (Hire Now)</h3>';
+                html += generateJobDescription('combined', rec.hiringStrategy);
+                html += '<div class="alert alert-info" style="margin-top: 20px;">';
+                html += '<p><strong>Phase 2 (in 3-6 months):</strong> Add dedicated AI Enabler role once foundation is established.</p>';
+                html += '</div>';
+            }
+
+            html += '<h3>Interview Questions</h3>';
+            html += generateInterviewQuestions(rec.roleStructure);
+
+            html += '<h3>Candidate Evaluation Rubric</h3>';
+            html += generateEvaluationRubric();
+
+            html += '</div>';
+            return html;
+        }
+
+        function generateJobDescription(role, hiringStrategy) {
+            const isInternal = hiringStrategy === 'internal';
+            
+            let jd = '<div class="job-description-box">';
+            
+            if (role === 'combined') {
+                jd += `<strong>${isInternal ? 'INTERNAL POSITION' : 'JOB POSTING'}: Head of AI / AI Program Lead</strong>\n\n`;
+                jd += `<strong>About the Role:</strong>\n`;
+                jd += `We're establishing an AI Center of Excellence to coordinate and accelerate our AI initiatives across the company. This role will own both the strategic direction and hands-on enablement of AI adoption.\n\n`;
+                
+                jd += `<strong>Key Responsibilities:</strong>\n`;
+                jd += `STRATEGIC (50% of time):\n`;
+                jd += `• Develop and maintain AI roadmap aligned with business objectives\n`;
+                jd += `• Evaluate and prioritize AI use cases across departments\n`;
+                jd += `• Set standards for AI tools, platforms, and governance\n`;
+                jd += `• Report progress and ROI to executive leadership\n`;
+                jd += `• Manage AI portfolio budget and resource allocation\n\n`;
+                
+                jd += `ENABLEMENT (30% of time):\n`;
+                jd += `• Run weekly AI office hours for teams to get unstuck\n`;
+                jd += `• Build and maintain AI knowledge base and documentation\n`;
+                jd += `• Onboard new hires on AI tools and best practices\n`;
+                jd += `• Facilitate cross-team AI showcases and learning sessions\n\n`;
+                
+                jd += `OPERATIONAL (20% of time):\n`;
+                jd += `• Ensure compliance with AI governance policies\n`;
+                jd += `• Track and report on AI project metrics\n`;
+                jd += `• Identify and eliminate duplicated efforts\n\n`;
+                
+                jd += `<strong>Requirements:</strong>\n`;
+                jd += `• 5+ years experience with AI/ML technologies in production\n`;
+                jd += `• Strong technical background (can read code, understand architectures)\n`;
+                jd += `• Proven ability to communicate with both engineers and executives\n`;
+                jd += `• Experience with project/program management\n`;
+                jd += `• Track record of cross-functional collaboration\n`;
+                if (isInternal) {
+                    jd += `• Deep knowledge of our existing systems and culture\n`;
+                }
+                jd += `\n<strong>Salary Range:</strong> $120K - $160K\n`;
+                
+            } else if (role === 'strategist') {
+                jd += `<strong>JOB POSTING: AI Strategist / AI Architect</strong>\n\n`;
+                jd += `<strong>About the Role:</strong>\n`;
+                jd += `Lead our AI Center of Excellence strategy, working with executive leadership to align AI initiatives with business goals and drive measurable ROI.\n\n`;
+                
+                jd += `<strong>Key Responsibilities:</strong>\n`;
+                jd += `• Develop 12-month AI roadmap and quarterly OKRs\n`;
+                jd += `• Lead use case evaluation and prioritization process\n`;
+                jd += `• Establish AI governance framework and standards\n`;
+                jd += `• Manage relationships with AI vendors and partners\n`;
+                jd += `• Present AI strategy and progress to board/executives\n`;
+                jd += `• Identify integration opportunities across departments\n`;
+                jd += `• Own AI portfolio budget (~$250K+)\n\n`;
+                
+                jd += `<strong>Requirements:</strong>\n`;
+                jd += `• 7+ years in AI/ML strategy or technical leadership\n`;
+                jd += `• MBA or equivalent business acumen preferred\n`;
+                jd += `• Experience presenting to C-suite and board\n`;
+                jd += `• Strong understanding of AI technologies and their business applications\n`;
+                jd += `• Proven track record of scaling AI from pilots to production\n\n`;
+                
+                jd += `<strong>Salary Range:</strong> $140K - $180K\n`;
+                
+            } else if (role === 'enabler') {
+                jd += `<strong>JOB POSTING: AI Enabler / AI Engagement Manager</strong>\n\n`;
+                jd += `<strong>About the Role:</strong>\n`;
+                jd += `Be the hands-on champion of AI adoption across our organization. You'll help teams get unstuck, share best practices, and build our AI community.\n\n`;
+                
+                jd += `<strong>Key Responsibilities:</strong>\n`;
+                jd += `• Run 4-6 hours of weekly AI office hours\n`;
+                jd += `• Create and maintain AI knowledge base and documentation\n`;
+                jd += `• Build and deliver AI onboarding program\n`;
+                jd += `• Organize monthly cross-team AI showcases\n`;
+                jd += `• Troubleshoot technical AI implementation issues\n`;
+                jd += `• Monitor internal AI community channels (Slack/Teams)\n`;
+                jd += `• Identify common patterns and create reusable solutions\n\n`;
+                
+                jd += `<strong>Requirements:</strong>\n`;
+                jd += `• 3+ years hands-on experience with AI/ML tools\n`;
+                jd += `• Excellent communication and teaching skills\n`;
+                jd += `• Patient and empathetic approach to helping others\n`;
+                jd += `• Experience with popular AI platforms (Claude, ChatGPT, etc.)\n`;
+                jd += `• Ability to quickly learn and explain new AI technologies\n\n`;
+                
+                jd += `<strong>Salary Range:</strong> $90K - $130K\n`;
+            }
+            
+            jd += '</div>';
+            return jd;
+        }
+
+        function generateInterviewQuestions(roleStructure) {
+            let html = '<div class="checklist">';
+            
+            const questions = [
+                {
+                    category: 'Technical Depth',
+                    question: 'Walk me through a recent AI project you led. What were the technical challenges and how did you solve them?',
+                    lookingFor: 'Hands-on experience, problem-solving, ability to explain technical concepts clearly'
+                },
+                {
+                    category: 'Strategic Thinking',
+                    question: 'How would you prioritize 10 different AI use cases across marketing, sales, and operations?',
+                    lookingFor: 'Framework for evaluation, business impact focus, ability to say no'
+                },
+                {
+                    category: 'Cross-Functional Collaboration',
+                    question: 'Tell me about a time you had to get buy-in from a skeptical stakeholder. How did you approach it?',
+                    lookingFor: 'Empathy, communication skills, persistence, ability to translate technical to business value'
+                },
+                {
+                    category: 'Governance & Risk',
+                    question: 'What are the top 3 risks you see with rapid AI adoption, and how would you mitigate them?',
+                    lookingFor: 'Understanding of compliance, security, ethics, practical risk management'
+                },
+                {
+                    category: 'Knowledge Sharing',
+                    question: 'How have you helped teams share knowledge in previous roles? Give me a specific example.',
+                    lookingFor: 'Teaching ability, documentation skills, community building experience'
+                },
+                {
+                    category: 'Dealing with Ambiguity',
+                    question: 'Our AI efforts are currently scattered across 5 departments with no coordination. Where would you start?',
+                    lookingFor: 'Structured approach, prioritization, quick win mentality, listening before prescribing'
+                }
+            ];
+
+            questions.forEach((q, index) => {
+                html += `
+                    <div class="checklist-item">
+                        <input type="checkbox" class="checklist-checkbox" id="q${index}">
+                        <div>
+                            <strong>${q.category}:</strong> ${q.question}
+                            <p style="font-size: 12px; color: #718096; margin-top: 5px;">
+                                Look for: ${q.lookingFor}
+                            </p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            return html;
+        }
+
+        function generateEvaluationRubric() {
+            let html = '<div class="metric-grid">';
+            
+            const criteria = [
+                { name: 'Technical Depth', weight: '25%' },
+                { name: 'Strategic Thinking', weight: '25%' },
+                { name: 'Communication', weight: '20%' },
+                { name: 'Cultural Fit', weight: '15%' },
+                { name: 'Leadership', weight: '15%' }
+            ];
+            
+            criteria.forEach(c => {
+                html += `
+                    <div class="metric-card">
+                        <h4>${c.name}</h4>
+                        <p>${c.weight}</p>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            html += '<div class="alert alert-info">';
+            html += '<p><strong>Scoring Guide:</strong> Rate each candidate 1-5 on each criteria. Weight the scores. Minimum passing score: 3.5/5.0</p>';
+            html += '</div>';
+            
+            return html;
+        }
+
+        function generateFirst30DaysSection(rec) {
+            let html = '<div class="section">';
+            html += '<h2>📅 Your First 30 Days - Day by Day</h2>';
+            
+            html += '<div class="timeline">';
+            
+            // Week 1
+            html += '<div class="timeline-item">';
+            html += '<h4>Days 1-2: Foundation</h4>';
+            html += '<p>✓ Kickoff meeting with executive sponsor<br>';
+            html += '✓ Announce initiative company-wide (email template below)<br>';
+            html += '✓ Set up 1:1s with key stakeholders (VPs, team leads)<br>';
+            html += '✓ Get access to all necessary systems</p>';
+            html += '</div>';
+            
+            html += '<div class="timeline-item">';
+            html += '<h4>Days 3-5: Discovery</h4>';
+            html += '<p>✓ Conduct stakeholder interviews (use interview guide below)<br>';
+            html += '✓ Audit existing AI projects - who\'s using what?<br>';
+            html += '✓ Map out current pain points and duplications<br>';
+            html += '✓ Identify quick win opportunities</p>';
+            html += '</div>';
+            
+            html += '<div class="timeline-item">';
+            html += '<h4>Days 6-7: Quick Wins</h4>';
+            html += '<p>✓ Create Slack/Teams channel for AI discussions<br>';
+            html += '✓ Set up shared Notion/Confluence workspace<br>';
+            html += '✓ Schedule first weekly office hours session<br>';
+            html += '✓ Send out survey on AI tool usage</p>';
+            html += '</div>';
+            
+            // Week 2
+            html += '<div class="timeline-item">';
+            html += '<h4>Days 8-10: Framework Development</h4>';
+            html += '<p>✓ Draft use case evaluation framework<br>';
+            html += '✓ Create initial governance guidelines<br>';
+            html += '✓ Identify 2-3 tools to standardize on<br>';
+            html += '✓ Begin building project registry</p>';
+            html += '</div>';
+            
+            html += '<div class="timeline-item">';
+            html += '<h4>Days 11-14: Stakeholder Buy-in</h4>';
+            html += '<p>✓ Present findings to executive team<br>';
+            html += '✓ Get approval on governance framework<br>';
+            html += '✓ Form AI steering committee<br>';
+            html += '✓ Schedule recurring meetings</p>';
+            html += '</div>';
+            
+            // Week 3
+            html += '<div class="timeline-item">';
+            html += '<h4>Days 15-21: Launch Programs</h4>';
+            html += '<p>✓ Host first AI office hours (promote heavily)<br>';
+            html += '✓ Launch project intake process<br>';
+            html += '✓ Begin documenting AI best practices<br>';
+            html += '✓ Identify first consolidation opportunity<br>';
+            html += '✓ Start weekly status report to leadership</p>';
+            html += '</div>';
+            
+            // Week 4
+            html += '<div class="timeline-item">';
+            html += '<h4>Days 22-30: Build Momentum</h4>';
+            html += '<p>✓ Run first cross-team AI showcase<br>';
+            html += '✓ Complete initial onboarding materials<br>';
+            html += '✓ Set up measurement dashboard<br>';
+            html += '✓ Plan 90-day roadmap with priorities<br>';
+            html += '✓ Conduct 30-day retrospective with sponsor</p>';
+            html += '</div>';
+            
+            html += '</div>';
+            
+            html += '</div>';
+            return html;
+        }
+
+        function generateMeetingTemplatesSection(rec) {
+            let html = '<div class="section">';
+            html += '<h2>📧 Meeting Templates & Communication</h2>';
+            
+            html += '<h3>Day 1: Company Announcement Email</h3>';
+            html += '<div class="job-description-box">';
+            html += `Subject: Introducing Our AI Center of Excellence
+
+Hi team,
+
+I'm excited to announce that we're launching an AI Center of Excellence (CoE) to help us get the most value from AI across ${parsedData.company}.
+
+Many of you are already experimenting with AI tools like Claude, ChatGPT, and custom solutions. That's fantastic! The CoE isn't here to slow you down - it's here to help you move faster by:
+
+• Sharing what's working (and what's not) across teams
+• Avoiding duplicate efforts
+• Providing support when you get stuck
+• Setting smart standards that keep us secure and compliant
+
+${parsedData.preparedFor} will be leading this effort. They'll be hosting weekly office hours starting [DATE] where anyone can drop in for help.
+
+We'll share more details soon, but if you have AI projects underway, please reach out to ${parsedData.preparedFor} so we can add you to the project registry.
+
+Excited to see what we build together!
+
+[Your Name]`;
+            html += '</div>';
+            
+            html += '<h3>Stakeholder Interview Template (15-20 min each)</h3>';
+            html += '<div class="job-description-box">';
+            html += `Questions to ask each department lead:
+
+1. What AI tools or projects is your team currently using/building?
+2. What problems are you hoping AI will solve?
+3. What's been your biggest frustration with AI so far?
+4. If you had unlimited AI resources, what would you build first?
+5. What would make AI adoption easier for your team?
+6. What concerns do you have about AI? (security, job displacement, etc.)
+7. How do you currently learn about new AI capabilities?
+8. What would success look like for your team with AI?
+
+[Take detailed notes - these will inform your priorities]`;
+            html += '</div>';
+            
+            html += '<h3>Weekly Executive Status Report Template</h3>';
+            html += '<div class="job-description-box">';
+            html += `Subject: AI CoE Weekly Update - Week of [DATE]
+
+KEY METRICS:
+• Active AI projects: [#]
+• Office hours attendees this week: [#]
+• Quick wins identified: [#]
+• Duplications eliminated: [#]
+
+WINS THIS WEEK:
+• [Specific accomplishment 1]
+• [Specific accomplishment 2]
+• [Specific accomplishment 3]
+
+CHALLENGES / BLOCKERS:
+• [Issue 1 and what you need]
+
+PRIORITIES NEXT WEEK:
+• [Top 3 things]
+
+Full project dashboard: [link]`;
+            html += '</div>';
+            
+            html += '<h3>AI Steering Committee Meeting Agenda (Monthly)</h3>';
+            html += '<div class="job-description-box">';
+            html += `AI Steering Committee - [DATE]
+Duration: 60 minutes
+
+ATTENDEES: CTO, VP Product, VP Engineering, AI CoE Lead, [others]
+
+AGENDA:
+1. (10 min) Metrics Review
+   - Projects in flight, completed, blocked
+   - Office hours utilization
+   - Cost tracking
+
+2. (20 min) Use Case Reviews
+   - 2-3 new proposals to evaluate
+   - Use decision framework to approve/defer/reject
+
+3. (15 min) Governance Updates
+   - Any policy changes needed
+   - Security/compliance updates
+   - Tool standardization decisions
+
+4. (10 min) Challenges & Resource Needs
+   - Current blockers
+   - Budget requests
+   - Staffing needs
+
+5. (5 min) Next Steps & Actions`;
+            html += '</div>';
+            
+            html += '</div>';
+            return html;
+        }
+
+        function generateToolsSection(rec) {
+            let html = '<div class="section">';
+            html += '<h2>🛠️ Tools & Setup Guide</h2>';
+            
+            html += '<h3>Recommended Tool Stack</h3>';
+            
+            html += '<div class="metric-grid">';
+            html += `
+                <div class="metric-card">
+                    <h4>AI Platforms</h4>
+                    <p>Claude / ChatGPT</p>
+                </div>
+                <div class="metric-card">
+                    <h4>Knowledge Base</h4>
+                    <p>Notion / Confluence</p>
+                </div>
+                <div class="metric-card">
+                    <h4>Project Tracking</h4>
+                    <p>Airtable / Monday</p>
+                </div>
+                <div class="metric-card">
+                    <h4>Communication</h4>
+                    <p>Slack / Teams</p>
+                </div>
+            `;
+            html += '</div>';
+            
+            html += '<h3>Setup Checklist</h3>';
+            html += '<div class="checklist">';
+            
+            const setup = [
+                'Create dedicated AI Slack/Teams channel (#ai-center-of-excellence)',
+                'Set up shared Notion/Confluence workspace with these pages: Project Registry, Best Practices, Office Hours Schedule, Tool Recommendations',
+                'Create Airtable/Monday board for project intake and tracking',
+                'Set up recurring calendar invites for office hours (suggest Tues/Thurs 2-3pm)',
+                'Create Google Form for project intake requests',
+                'Set up email alias (ai-coe@company.com)',
+                'Create simple dashboard in Tableau/Looker for metrics tracking',
+                'Set up 1Password/shared credential system for AI platform accounts'
+            ];
+            
+            setup.forEach((item, i) => {
+                html += `
+                    <div class="checklist-item">
+                        <input type="checkbox" class="checklist-checkbox" id="setup${i}">
+                        <div>${item}</div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            html += '<h3>Cost Breakdown</h3>';
+            html += '<div class="alert alert-info">';
+            html += '<p><strong>Essential Tools (Year 1):</strong></p>';
+            html += '<ul>';
+            html += '<li>AI Platform Credits (Claude/OpenAI): $10,000 - $50,000</li>';
+            html += '<li>Project Management (Airtable/Monday): $1,000 - $3,000</li>';
+            html += '<li>Knowledge Base (if not already have): $0 - $2,000</li>';
+            html += '<li>Collaboration Tools: Usually covered by existing licenses</li>';
+            html += '</ul>';
+            html += '<p style="margin-top: 10px;"><strong>Total: $11K - $55K annually</strong></p>';
+            html += '</div>';
+            
+            html += '</div>';
+            return html;
+        }
+
+        function generateMetricsSection(rec) {
+            let html = '<div class="section">';
+            html += '<h2>📊 Success Metrics & KPIs</h2>';
+            
+            html += '<h3>Month 1-3 Metrics (Foundation)</h3>';
+            html += '<div class="metric-grid">';
+            html += `
+                <div class="metric-card">
+                    <h4>Project Visibility</h4>
+                    <p>80%+ registered</p>
+                </div>
+                <div class="metric-card">
+                    <h4>Office Hours</h4>
+                    <p>15+ attendees/week</p>
+                </div>
+                <div class="metric-card">
+                    <h4>Duplications Found</h4>
+                    <p>3-5 identified</p>
+                </div>
+                <div class="metric-card">
+                    <h4>Knowledge Base</h4>
+                    <p>20+ articles</p>
+                </div>
+            `;
+            html += '</div>';
+            
+            html += '<h3>Month 4-6 Metrics (Scaling)</h3>';
+            html += '<div class="metric-grid">';
+            html += `
+                <div class="metric-card">
+                    <h4>Cost Savings</h4>
+                    <p>$50K+ avoided</p>
+                </div>
+                <div class="metric-card">
+                    <h4>Time to Onboard</h4>
+                    <p>&lt;1 day for new hires</p>
+                </div>
+                <div class="metric-card">
+                    <h4>Projects to Prod</h4>
+                    <p>2-3 delivered</p>
+                </div>
+                <div class="metric-card">
+                    <h4>Team Satisfaction</h4>
+                    <p>8+/10 score</p>
+                </div>
+            `;
+            html += '</div>';
+            
+            html += '<h3>Month 7-12 Metrics (Maturity)</h3>';
+            html += '<div class="metric-grid">';
+            html += `
+                <div class="metric-card">
+                    <h4>Measurable ROI</h4>
+                    <p>$250K+ value</p>
+                </div>
+                <div class="metric-card">
+                    <h4>Major Initiatives</h4>
+                    <p>5+ in production</p>
+                </div>
+                <div class="metric-card">
+                    <h4>Governance</h4>
+                    <p>100% compliant</p>
+                </div>
+                <div class="metric-card">
+                    <h4>Cross-team Projects</h4>
+                    <p>3+ collaborative</p>
+                </div>
+            `;
+            html += '</div>';
+            
+            html += '<h3>How to Track These</h3>';
+            html += '<div class="alert alert-info">';
+            html += '<p><strong>Weekly:</strong> Update project registry, log office hours attendance, track intake requests</p>';
+            html += '<p><strong>Monthly:</strong> Calculate cost savings from avoided duplication, survey team satisfaction, review project pipeline</p>';
+            html += '<p><strong>Quarterly:</strong> Calculate ROI of completed projects, report to executive committee, adjust priorities</p>';
+            html += '</div>';
+            
+            html += '</div>';
+            return html;
+        }
+
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+        }
+
+        function getRoleStructureName(role) {
+            const map = {
+                'combined': 'Single Combined Role',
+                'split': 'Two Separate Roles',
+                'phased': 'Phased Approach'
+            };
+            return map[role] || role;
+        }
+
+        function getHiringStrategyName(strategy) {
+            const map = {
+                'internal': 'Internal Promotion',
+                'external': 'External Hire',
+                'hybrid': 'Hybrid Approach'
+            };
+            return map[strategy] || strategy;
+        }
+
+        function downloadJobDescriptions() {
+            const rec = parsedData.recommendations;
+            let content = `JOB DESCRIPTIONS - ${parsedData.company}\n`;
+            content += `Generated: ${new Date().toLocaleDateString()}\n`;
+            content += `\n${'='.repeat(60)}\n\n`;
+            
+            // Add job descriptions based on role structure
+            content += generateJobDescriptionText(rec.roleStructure, rec.hiringStrategy);
+            
+            downloadFile(content, `Job-Descriptions-${parsedData.company}.txt`);
+        }
+
+        function downloadActionPlan() {
+            let content = `30-DAY ACTION PLAN - ${parsedData.company}\n`;
+            content += `For: ${parsedData.preparedFor}\n`;
+            content += `Generated: ${new Date().toLocaleDateString()}\n\n`;
+            
+            content += `${'='.repeat(60)}\n`;
+            content += `WEEK 1: FOUNDATION\n`;
+            content += `${'='.repeat(60)}\n\n`;
+            content += `Days 1-2:\n`;
+            content += `- Kickoff meeting with executive sponsor\n`;
+            content += `- Announce initiative company-wide\n`;
+            content += `- Set up 1:1s with key stakeholders\n`;
+            content += `- Get system access\n\n`;
+            
+            content += `Days 3-5:\n`;
+            content += `- Conduct stakeholder interviews\n`;
+            content += `- Audit existing AI projects\n`;
+            content += `- Map current pain points\n`;
+            content += `- Identify quick wins\n\n`;
+            
+            content += `[... continue with full 30-day plan]\n\n`;
+            
+            downloadFile(content, `30-Day-Action-Plan-${parsedData.company}.txt`);
+        }
+
+        function downloadAll() {
+            const rec = parsedData.recommendations;
+            let content = `COMPLETE AI CoE PLAYBOOK\n`;
+            content += `Company: ${parsedData.company}\n`;
+            content += `Prepared for: ${parsedData.preparedFor}\n`;
+            content += `Generated: ${new Date().toLocaleDateString()}\n\n`;
+            
+            content += `${'='.repeat(80)}\n`;
+            content += `EXECUTIVE SUMMARY\n`;
+            content += `${'='.repeat(80)}\n\n`;
+            content += `Role Structure: ${getRoleStructureName(rec.roleStructure)}\n`;
+            content += `Hiring Strategy: ${getHiringStrategyName(rec.hiringStrategy)}\n`;
+            content += `Urgency Level: ${rec.urgencyLevel}\n`;
+            content += `Budget: ${parsedData.budget}\n\n`;
+            
+            content += `[Full playbook content would be included here...]\n\n`;
+            
+            downloadFile(content, `Complete-AI-CoE-Playbook-${parsedData.company}.txt`);
+        }
+
+        function generateJobDescriptionText(roleStructure, hiringStrategy) {
+            // Return plain text version of job descriptions
+            return `[Full job descriptions would be included here based on role structure]\n\n`;
+        }
+
+        function downloadFile(content, filename) {
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
